@@ -359,3 +359,14 @@
     transition: border-color var(--trans);
 }
 .topbar-badge:hover { border-color: var(--red); color: var(--red); }
+
+
+
+
+/* Main Content */
+.main-content {
+    margin-left: var(--sidebar-w);
+    padding-top: var(--topbar-h);
+    min-height: 100vh;
+    flex: 1;
+}
