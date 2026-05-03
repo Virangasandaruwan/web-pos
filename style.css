@@ -206,3 +206,10 @@
     font-family: var(--font-mono);
 }
 .login-hint strong { color: var(--gray2); }
+
+
+/*layout*/
+#appPage {
+    flex-direction: column;
+    min-height: 100vh;
+}
