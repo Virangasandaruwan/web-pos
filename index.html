@@ -191,6 +191,39 @@
             </div>
         </section>
 
+
+        <!--  CUSTOMERS  -->
+        <section class="section" id="sec-customers">
+            <div class="sec-header">
+                <div>
+                    <h2 class="sec-title">Customers</h2>
+                    <p class="sec-sub">Manage your customer base</p>
+                </div>
+                <button class="btn-add" id="openAddCustomer">
+                    <i class="fas fa-plus"></i> Add Customer
+                </button>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="customerSearch" placeholder="Search customers…"/>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table" id="customerTable">
+                    <thead>
+                    <tr>
+                        <th>#ID</th><th>Name</th><th>Phone</th><th>Address</th><th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="customerTbody"></tbody>
+                </table>
+                <div class="empty-state" id="customerEmpty">
+                    <i class="fas fa-users-slash"></i>
+                    <p>No customers yet. Add your first one!</p>
+                </div>
+            </div>
+        </section>
+
+
     </main>
 
 
