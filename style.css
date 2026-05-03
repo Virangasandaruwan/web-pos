@@ -509,3 +509,34 @@
 }
 .stock-item .si-name { font-weight: 500; color: var(--white); }
 .stock-item .si-qty { font-family: var(--font-mono); font-size: 0.78rem; color: var(--orange); }
+
+
+
+
+
+/*  SEARCH BAR  */
+.search-bar {
+    position: relative;
+    margin-bottom: 1.2rem;
+    max-width: 380px;
+}
+.search-bar i {
+    position: absolute;
+    left: 13px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray); font-size: 0.85rem;
+}
+.search-bar input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 1rem 0.65rem 2.4rem;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color var(--trans);
+}
+.search-bar input:focus { border-color: var(--red); }
+.search-bar input::placeholder { color: var(--gray); }
