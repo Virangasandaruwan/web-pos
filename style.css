@@ -627,3 +627,36 @@
 .empty-state p { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 1px; }
 .empty-state.sm { padding: 2rem 1rem; }
 .empty-state.sm i { font-size: 1.8rem; }
+
+
+
+/* buttons */
+.btn-add {
+    background: var(--red);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: white;
+    padding: 0.65rem 1.2rem;
+    font-family: var(--font-head);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 0.5rem;
+    transition: all var(--trans);
+    box-shadow: 0 0 16px var(--red-glow);
+    white-space: nowrap;
+}
+.btn-add:hover { transform: translateY(-2px); box-shadow: 0 0 26px var(--red-glow); }
+.btn-add.outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    box-shadow: none;
+}
+.btn-add.outline:hover {
+    border-color: var(--red);
+    color: var(--red);
+    box-shadow: none;
+    transform: none;
+}
