@@ -370,3 +370,142 @@
     min-height: 100vh;
     flex: 1;
 }
+
+
+
+
+
+/* Sections */
+.section {
+    display: none;
+    padding: 2rem;
+    animation: fadeIn 0.35s ease;
+}
+.section.active { display: block; }
+@keyframes fadeIn {
+    from { opacity:0; transform: translateY(12px); }
+    to   { opacity:1; transform: translateY(0); }
+}
+
+.sec-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.sec-title {
+    font-family: var(--font-head);
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--white);
+    margin-bottom: 0.2rem;
+}
+.sec-sub {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+}
+
+
+
+
+/* ── DASHBOARD ─────────────────────────────── */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: border-color var(--trans), transform var(--trans);
+    animation: slideUp 0.5s ease both;
+}
+.stat-card:nth-child(2) { animation-delay: 0.05s; }
+.stat-card:nth-child(3) { animation-delay: 0.1s; }
+.stat-card:nth-child(4) { animation-delay: 0.15s; }
+.stat-card:hover { border-color: var(--border-hover); transform: translateY(-3px); }
+.stat-icon {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.stat-card[data-color="red"]  .stat-icon { background: rgba(230,48,48,0.15); color: var(--red); }
+.stat-card[data-color="blue"] .stat-icon { background: rgba(59,130,246,0.15); color: var(--blue); }
+.stat-card[data-color="green"].stat-icon { background: rgba(34,197,94,0.15);  color: var(--green); }
+.stat-card[data-color="gold"] .stat-icon { background: rgba(234,179,8,0.15);  color: var(--gold); }
+.stat-body { display: flex; flex-direction: column; }
+.stat-num {
+    font-family: var(--font-head);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 0.2rem;
+}
+.stat-lbl {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+
+.dash-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.3rem;
+}
+.dash-card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--gray2);
+    text-transform: uppercase;
+}
+.dash-link {
+    background: none; border: none;
+    color: var(--red); cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 0.65rem; letter-spacing: 1px;
+    transition: opacity var(--trans);
+}
+.dash-link:hover { opacity: 0.7; }
+
+.recent-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.recent-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.65rem 0.8rem;
+    background: var(--bg2);
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+}
+.recent-item .ri-left { display: flex; flex-direction: column; gap: 2px; }
+.recent-item .ri-id { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-dim); }
+.recent-item .ri-cust { font-weight: 500; color: var(--white); }
+.recent-item .ri-total { font-family: var(--font-mono); font-size: 0.85rem; color: var(--green); font-weight: 500; }
+
+.stock-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.65rem 0.8rem;
+    background: var(--bg2);
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+}
+.stock-item .si-name { font-weight: 500; color: var(--white); }
+.stock-item .si-qty { font-family: var(--font-mono); font-size: 0.78rem; color: var(--orange); }
