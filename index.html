@@ -125,6 +125,73 @@
     </div>
 
 
+<!--======================    Main pages ===================-->
+    <main class="main-content">
+
+
+        <!--        dashboard interface        -->
+        <section class="section active" id="sec-dashboard">
+            <div class="sec-header">
+                <div>
+                    <h2 class="sec-title">Overview</h2>
+                    <p class="sec-sub">Welcome back, Admin</p>
+                </div>
+            </div>
+
+
+            <div class="stats-row" id="statsRow">
+
+                <div class="stat-card" data-color="red">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-body">
+                        <span class="stat-num" id="statCustomers">0</span>
+                        <span class="stat-lbl">Customers</span>
+                    </div>
+                </div>
+                <div class="stat-card" data-color="blue">
+                    <div class="stat-icon"><i class="fas fa-boxes-stacked"></i></div>
+                    <div class="stat-body">
+                        <span class="stat-num" id="statItems">0</span>
+                        <span class="stat-lbl">Products</span>
+                    </div>
+                </div>
+                <div class="stat-card" data-color="green">
+                    <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+                    <div class="stat-body">
+                        <span class="stat-num" id="statOrders">0</span>
+                        <span class="stat-lbl">Orders</span>
+                    </div>
+                </div>
+                <div class="stat-card" data-color="gold">
+                    <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="stat-body">
+                        <span class="stat-num" id="statRevenue">$0</span>
+                        <span class="stat-lbl">Revenue</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row g-4 mt-1">
+                <div class="col-lg-6">
+                    <div class="dash-card">
+                        <div class="dash-card-head">
+                            <span>Recent Orders</span>
+                            <button class="dash-link" data-section="history">View All</button>
+                        </div>
+                        <div id="recentOrders" class="recent-list"></div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="dash-card">
+                        <div class="dash-card-head">
+                            <span>Low Stock Alert</span>
+                        </div>
+                        <div id="lowStockList" class="recent-list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
 
 
 
