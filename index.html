@@ -258,6 +258,100 @@
 
 
 
+        <!--=======================  order  =================================== -->
+        <section class="section" id="sec-orders">
+            <div class="sec-header">
+                <div>
+                    <h2 class="sec-title">New Order</h2>
+                    <p class="sec-sub" id="orderIdDisplay">Order # —</p>
+                </div>
+                <button class="btn-add outline" id="clearOrderBtn">
+                    <i class="fas fa-rotate-left"></i> Clear
+                </button>
+            </div>
+            <div class="order-grid">
+                <!--  item picker -->
+                <div class="order-left">
+                    <div class="order-block">
+                        <label class="field-label">SELECT CUSTOMER</label>
+                        <select id="orderCustomer" class="pos-select">
+                            <option value="">— Choose Customer —</option>
+                        </select>
+                        <span class="field-error" id="orderCustomerErr"></span>
+                    </div>
+                    <div class="order-block">
+                        <label class="field-label">ADD ITEM</label>
+                        <div class="item-picker">
+                            <select id="orderItemSelect" class="pos-select">
+                                <option value="">— Choose Item —</option>
+                            </select>
+                            <input type="number" id="orderQty" class="pos-input" placeholder="Qty" min="1" value="1"/>
+                            <button class="btn-add-item" id="addItemToCart">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <span class="field-error" id="orderItemErr"></span>
+                    </div>
+                    <div class="order-block">
+                        <label class="field-label">ORDER ITEMS</label>
+                        <div class="cart-wrap">
+                            <table class="data-table cart-table">
+                                <thead>
+                                <tr><th>Item</th><th>Price</th><th>Qty</th><th>Sub</th><th></th></tr>
+                                </thead>
+                                <tbody id="cartTbody"></tbody>
+                            </table>
+                            <div class="empty-state sm" id="cartEmpty">
+                                <i class="fas fa-cart-shopping"></i>
+                                <p>Cart is empty</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--  bill summary -->
+                <div class="order-right">
+                    <div class="bill-card">
+
+                        <div class="bill-head">ORDER SUMMARY</div>
+
+
+                        <div class="bill-row">
+                            <span>Customer</span>
+                            <span id="billCustomer">—</span>
+                        </div>
+                        <div class="bill-row">
+                            <span>Items</span>
+                            <span id="billItemCount">0</span>
+                        </div>
+
+
+                        <div class="bill-divider"></div>
+                        <div class="bill-row sub">
+                            <span>Subtotal</span>
+                            <span id="billSubtotal">RS0.00</span>
+                        </div>
+                        <div class="bill-row sub">
+                            <span>Tax (8%)</span>
+                            <span id="billTax">RS0.00</span>
+                        </div>
+                        <div class="bill-divider"></div>
+                        <div class="bill-row total">
+                            <span>TOTAL</span>
+                            <span id="billTotal">RS0.00</span>
+                        </div>
+
+                        <button class="btn-place-order" id="placeOrderBtn">
+                            <i class="fas fa-check-circle"></i>
+                            <span>PLACE ORDER</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+
     </main>
 
 

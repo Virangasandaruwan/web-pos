@@ -33,6 +33,7 @@
 /*                      login page                                                */
 /*================================================================================*/
 #loginPage {
+
     align-items: center;
     justify-content: center;
     position: relative;
@@ -309,7 +310,14 @@
     transition: all var(--trans);
 }
 .btn-logout:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
-
+/*----------------*/
+.sidebar-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 150;
+}
+.sidebar-overlay.show { display: block; }
 
 
 
@@ -659,4 +667,31 @@
     color: var(--red);
     box-shadow: none;
     transform: none;
+}
+
+
+
+
+
+/*      responssive     */
+@media (max-width: 991px) {
+    .sidebar {
+        transform: translateX(calc(-1 * var(--sidebar-w)));
+    }
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    .topbar { left: 0; }
+    .main-content { margin-left: 0; }
+    .order-grid { grid-template-columns: 1fr; }
+    .order-right { position: static; }
+}
+
+@media (max-width: 600px) {
+    .section { padding: 1rem; }
+    .sec-title { font-size: 1.4rem; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .stat-num { font-size: 1.4rem; }
+    .item-picker { grid-template-columns: 1fr 60px 44px; }
+    .modal-box { padding: 1.3rem; }
 }
