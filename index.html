@@ -211,7 +211,11 @@
                 <table class="data-table" id="customerTable">
                     <thead>
                     <tr>
-                        <th>#ID</th><th>Name</th><th>Phone</th><th>Address</th><th>Actions</th>
+                        <th>#ID</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody id="customerTbody"></tbody>
@@ -407,7 +411,7 @@
                 <input type="text"
                        id="custName"
                        class="field-input"
-                       placeholder="John Doe"/>
+                       placeholder="Saman kumara"/>
                 <span class="field-error" id="custNameErr"></span>
             </div>
 
@@ -417,7 +421,7 @@
                 <input type="text"
                        id="custPhone"
                        class="field-input"
-                       placeholder="+1 555 000 0000"/>
+                       placeholder="+94 76 000 0000"/>
                 <span class="field-error" id="custPhoneErr"></span>
             </div>
 
@@ -538,5 +542,819 @@
 
 <!-- Sidebar Overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+
+
+<script>
+
+    const Model = {
+
+        VALID_USER: 'admin',
+        VALID_PASS: '1234',
+        isLoggedIn: false,
+
+
+        customers: [],
+        items: [],
+        orders: [],
+
+
+        _custId: 1,
+        _itemId: 1,
+        _orderId: 1000,
+
+        nextCustId()  { return this._custId++; },
+        nextItemId()  { return this._itemId++; },
+        nextOrderId() { return 'ORD-' + (this._orderId++); },
+
+        //  Customer
+        addCustomer(data) {
+            const c = { id: this.nextCustId(), ...data };
+            this.customers.push(c);
+            return c;
+        },
+        updateCustomer(id, data) {
+            const i = this.customers.findIndex(c => c.id === id);
+            if (i !== -1) { this.customers[i] = { id, ...data }; return true; }
+            return false;
+        },
+        deleteCustomer(id) {
+            const i = this.customers.findIndex(c => c.id === id);
+            if (i !== -1) { this.customers.splice(i, 1); return true; }
+            return false;
+        },
+        findCustomer(id) { return this.customers.find(c => c.id === id); },
+        searchCustomers(q) {
+            q = q.toLowerCase();
+            return this.customers.filter(c =>
+                c.name.toLowerCase().includes(q) ||
+                c.phone.toLowerCase().includes(q) ||
+                c.address.toLowerCase().includes(q)
+            );
+        },
+
+        //  Item
+        addItem(data) {
+            const item = { id: this.nextItemId(), ...data };
+            this.items.push(item);
+            return item;
+        },
+        updateItem(id, data) {
+            const i = this.items.findIndex(x => x.id === id);
+            if (i !== -1) { this.items[i] = { id, ...data }; return true; }
+            return false;
+        },
+        deleteItem(id) {
+            const i = this.items.findIndex(x => x.id === id);
+            if (i !== -1) { this.items.splice(i, 1); return true; }
+            return false;
+        },
+        findItem(id) { return this.items.find(x => x.id === id); },
+        searchItems(q) {
+            q = q.toLowerCase();
+            return this.items.filter(x =>
+                x.name.toLowerCase().includes(q) ||
+                x.code.toLowerCase().includes(q)
+            );
+        },
+
+        //  Order
+        placeOrder(customerId, cartItems) {
+            const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0);
+            const tax      = subtotal * 0.08;
+            const total    = subtotal + tax;
+            const order = {
+                id: this.nextOrderId(),
+                customerId,
+                customerName: this.findCustomer(customerId)?.name || 'Unknown',
+                items: cartItems.map(i => ({ ...i })),
+                subtotal, tax, total,
+                date: new Date()
+            };
+            // Deduct stock
+            cartItems.forEach(ci => {
+                const item = this.findItem(ci.itemId);
+                if (item) item.qty = Math.max(0, item.qty - ci.qty);
+            });
+            this.orders.unshift(order);
+            return order;
+        },
+        searchOrders(q) {
+            q = q.toLowerCase();
+            return this.orders.filter(o =>
+                o.id.toLowerCase().includes(q) ||
+                o.customerName.toLowerCase().includes(q)
+            );
+        },
+
+        // Stats
+        totalRevenue() { return this.orders.reduce((s, o) => s + o.total, 0); },
+        lowStockItems() { return this.items.filter(x => x.qty <= 5); },
+
+        // Seed demo data
+        seed() {
+            this.addCustomer({ name: 'Kalindu Karunarathna',  phone: '+94 76 111 2223', address: 'Colombo' });
+            this.addCustomer({ name: 'Saman Kumara',   phone: '+94 77 020 5678', address: 'Galle' });
+            this.addCustomer({ name: 'Thisara Deshan', phone: '+94 76 030 9012', address: 'Panadura' });
+
+            this.addItem({ code: 'ITM-001', name: 'Wireless Keyboard',   price: 4900.00,  qty: 25 });
+            this.addItem({ code: 'ITM-002', name: 'Optical Mouse',        price: 2400.00,  qty: 3  });
+            this.addItem({ code: 'ITM-003', name: '27" Monitor',          price: 32900.00, qty: 8  });
+            this.addItem({ code: 'ITM-004', name: 'USB-C Hub',            price: 3900.00,  qty: 2  });
+            this.addItem({ code: 'ITM-005', name: 'Mechanical Headphones',price: 8900.00,  qty: 15 });
+        }
+    };
+
+
+    const View = {
+
+        // Toast notifications
+        toast(msg, type = 'success') {
+            const icons = {
+                success: 'fa-circle-check',
+                error: 'fa-circle-xmark',
+                warn: 'fa-triangle-exclamation' };
+            const el = $(`
+      <div class="toast ${type}">
+        <i class="fas ${icons[type]}"></i>
+        <span>${msg}</span>
+      </div>`);
+            $('#toastWrap').append(el);
+            setTimeout(() => el.fadeOut(300, () => el.remove()), 3200);
+        },
+
+        // Modal open/close
+        openModal(id)  { $(`#${id}`).addClass('show'); },
+        closeModal(id) { $(`#${id}`).removeClass('show'); },
+
+        // Navigate sections
+        showSection(name) {
+            $('.section').removeClass('active');
+            $(`#sec-${name}`).addClass('active');
+            $('.nav-item').removeClass('active');
+            $(`.nav-item[data-section="${name}"]`).addClass('active');
+            const titles = {
+                dashboard:'Dashboard',
+                customers:'Customers',
+                items:'Inventory',
+                orders:'New Order',
+                history:'Order History'
+            };
+            $('#topbarTitle').text(titles[name] || name);
+        },
+
+        // Customer Table
+        renderCustomers(list) {
+            const tbody = $('#customerTbody');
+            tbody.empty();
+            if (!list.length) {
+                $('#customerEmpty').addClass('show');
+                return;
+            }
+            $('#customerEmpty').removeClass('show');
+            list.forEach(c => {
+                tbody.append(`
+        <tr>
+          <td><span class="badge-pill badge-red">#${c.id}</span></td>
+          <td>${this.esc(c.name)}</td>
+          <td><code style="font-size:0.78rem;color:#999">${this.esc(c.phone)}</code></td>
+          <td>${this.esc(c.address)}</td>
+          <td>
+            <button class="tbl-btn edit" data-action="editCust" data-id="${c.id}" title="Edit">
+              <i class="fas fa-pen"></i>
+            </button>
+            <button class="tbl-btn del"  data-action="delCust"  data-id="${c.id}" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>`);
+            });
+        },
+
+        //  Item Table
+        renderItems(list) {
+            const tbody = $('#itemTbody');
+            tbody.empty();
+            if (!list.length) {
+                $('#itemEmpty').addClass('show');
+                return;
+            }
+            $('#itemEmpty').removeClass('show');
+            list.forEach(i => {
+                const statusClass = i.qty === 0 ? 'badge-red' : i.qty <= 5 ? 'badge-gold' : 'badge-green';
+                const statusText  = i.qty === 0 ? 'Out of Stock' : i.qty <= 5 ? 'Low Stock' : 'In Stock';
+                tbody.append(`
+        <tr>
+          <td><code style="font-size:0.78rem;color:#999">${this.esc(i.code)}</code></td>
+          <td><strong>${this.esc(i.name)}</strong></td>
+          <td><span style="font-family:var(--font-mono);color:var(--green)">RS ${i.price.toFixed(2)}</span></td>
+          <td><span style="font-family:var(--font-mono)">${i.qty}</span></td>
+          <td><span class="badge-pill ${statusClass}">${statusText}</span></td>
+          <td>
+            <button class="tbl-btn edit" data-action="editItem" data-id="${i.id}" title="Edit">
+              <i class="fas fa-pen"></i>
+            </button>
+            <button class="tbl-btn del"  data-action="delItem"  data-id="${i.id}" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>`);
+            });
+        },
+
+        //  Cart Table
+        renderCart(cart) {
+            const tbody = $('#cartTbody');
+            tbody.empty();
+            if (!cart.length) {
+                $('#cartEmpty').addClass('show');
+                return;
+            }
+            $('#cartEmpty').removeClass('show');
+            cart.forEach((ci, idx) => {
+                const sub = (ci.price * ci.qty).toFixed(2);
+                tbody.append(`
+        <tr>
+          <td>${this.esc(ci.name)}</td>
+          <td style="font-family:var(--font-mono)">RS ${ci.price.toFixed(2)}</td>
+          <td>
+            <div class="qty-control">
+              <button class="qty-btn" data-action="decQty" data-idx="${idx}"><i class="fas fa-minus"></i></button>
+              <span class="qty-val">${ci.qty}</span>
+              <button class="qty-btn" data-action="incQty" data-idx="${idx}"><i class="fas fa-plus"></i></button>
+            </div>
+          </td>
+          <td style="font-family:var(--font-mono);color:var(--green)">RS ${sub}</td>
+          <td>
+            <button class="remove-item" data-action="removeCart" data-idx="${idx}">
+              <i class="fas fa-xmark"></i>
+            </button>
+          </td>
+        </tr>`);
+            });
+        },
+
+        // Order History Table
+        renderHistory(list) {
+            const tbody = $('#historyTbody');
+            tbody.empty();
+            if (!list.length) {
+                $('#historyEmpty').addClass('show');
+                return;
+            }
+            $('#historyEmpty').removeClass('show');
+            list.forEach(o => {
+                const d = new Date(o.date);
+                const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+                const itemCount = o.items.reduce((s,i) => s + i.qty, 0);
+                tbody.append(`
+        <tr>
+          <td><span class="badge-pill badge-red">${o.id}</span></td>
+          <td><code style="font-size:0.75rem;color:#999">${dateStr}</code></td>
+          <td>${this.esc(o.customerName)}</td>
+          <td><span style="font-family:var(--font-mono)">${itemCount} item${itemCount !== 1 ? 's' : ''}</span></td>
+          <td><span style="font-family:var(--font-mono);color:var(--green)">RS ${o.total.toFixed(2)}</span></td>
+          <td>
+            <button class="tbl-btn view" data-action="viewOrder" data-id="${o.id}" title="View Details">
+              <i class="fas fa-eye"></i>
+            </button>
+          </td>
+        </tr>`);
+            });
+        },
+
+        //  Order Detail Modal
+        renderOrderDetail(order) {
+            let itemsHtml = order.items.map(i => `
+      <div class="detail-row">
+        <span>${this.esc(i.name)}</span>
+        <span style="font-family:var(--font-mono)">
+          ${i.qty} × RS ${i.price.toFixed(2)} = RS ${(i.qty * i.price).toFixed(2)}
+        </span>
+      </div>`).join('');
+
+            const d = new Date(order.date);
+            $('#orderDetailTitle').text(`Order ${order.id}`);
+            $('#orderDetailContent').html(`
+      <div class="detail-row"><span>DATE</span><span>${d.toLocaleString()}</span></div>
+      <div class="detail-row"><span>CUSTOMER</span><span>${this.esc(order.customerName)}</span></div>
+      <div style="margin:1rem 0">
+        <div class="field-label" style="margin-bottom:0.5rem">ITEMS</div>
+        ${itemsHtml}
+      </div>
+      <div class="detail-row"><span>SUBTOTAL</span><span style="font-family:var(--font-mono)">RS ${order.subtotal.toFixed(2)}</span></div>
+      <div class="detail-row"><span>TAX (8%)</span><span style="font-family:var(--font-mono)">RS ${order.tax.toFixed(2)}</span></div>
+      <div class="detail-total">
+        <span>TOTAL</span>
+        <span>RS ${order.total.toFixed(2)}</span>
+      </div>`);
+        },
+
+        //  Dashboard
+        renderDashboard() {
+            $('#statCustomers').text(Model.customers.length);
+            $('#statItems').text(Model.items.length);
+            $('#statOrders').text(Model.orders.length);
+            $('#statRevenue').text('RS ' + Model.totalRevenue().toFixed(2));
+
+            // Recent orders
+            const recent = $('#recentOrders');
+            recent.empty();
+            if (!Model.orders.length) {
+                recent.html('<p style="color:var(--text-dim);font-size:0.8rem;padding:1rem;text-align:center">No orders yet</p>');
+            } else {
+                Model.orders.slice(0, 5).forEach(o => {
+                    recent.append(`
+          <div class="recent-item">
+            <div class="ri-left">
+              <span class="ri-id">${o.id}</span>
+              <span class="ri-cust">${this.esc(o.customerName)}</span>
+            </div>
+            <span class="ri-total">RS ${o.total.toFixed(2)}</span>
+          </div>`);
+                });
+            }
+
+            // Low stock
+            const low = $('#lowStockList');
+            low.empty();
+            const lowItems = Model.lowStockItems();
+            if (!lowItems.length) {
+                low.html('<p style="color:var(--green);' +
+                    'font-size:0.8rem;' +
+                    'padding:1rem;' +
+                    'text-align:center">' +
+                    '<i class="fas fa-circle-check"></i> All items well-stocked</p>');
+            } else {
+                lowItems.forEach(i => {
+                    low.append(`
+          <div class="stock-item">
+            <span class="si-name">${this.esc(i.name)}</span>
+            <span class="si-qty">${i.qty} left</span>
+          </div>`);
+                });
+            }
+        },
+
+        //  Customer Select in Order
+        populateCustomerSelect() {
+            const sel = $('#orderCustomer');
+            sel.find('option:not(:first)').remove();
+            Model.customers.forEach(c => {
+                sel.append(`<option value="${c.id}">${this.esc(c.name)}</option>`);
+            });
+        },
+
+        //  Item Select in Order
+        populateItemSelect() {
+            const sel = $('#orderItemSelect');
+            sel.find('option:not(:first)').remove();
+            Model.items.filter(i => i.qty > 0).forEach(i => {
+                sel.append(`<option value="${i.id}">${this.esc(i.name)} — RS ${i.price.toFixed(2)} (${i.qty} left)</option>`);
+            });
+        },
+
+        // Escape HTML
+        esc(str) {
+            return String(str)
+                .replace(/&/g,'&amp;')
+                .replace(/</g,'&lt;')
+                .replace(/>/g,'&gt;')
+                .replace(/"/g,'&quot;');
+        }
+    };
+
+
+    const Controller = {
+
+        // Active section name
+        currentSection: 'dashboard',
+
+        // Cart items
+        cart: [],
+
+        // Pending delete callback
+        _deleteCb: null,
+
+        //  INIT
+        init() {
+            Model.seed();
+            this.bindEvents();
+            this.startClock();
+        },
+
+        //  CLOCK
+        startClock() {
+            const tick = () => {
+                const now = new Date();
+                $('#topbarTime').text(now.toLocaleTimeString([],
+                    {
+                        hour:'2-digit',
+                        minute:'2-digit',
+                        second:'2-digit'
+                    }
+                ));
+            };
+            tick();
+            setInterval(tick, 1000);
+        },
+
+        //  NAVIGATE
+        navigate(name) {
+            this.currentSection = name;
+            View.showSection(name);
+            if (name === 'dashboard') View.renderDashboard();
+            if (name === 'customers') View.renderCustomers(Model.customers);
+            if (name === 'items')     View.renderItems(Model.items);
+            if (name === 'orders')    this.refreshOrderSection();
+            if (name === 'history')   View.renderHistory(Model.orders);
+            // Close mobile sidebar
+            $('#sidebar').removeClass('open');
+            $('#sidebarOverlay').removeClass('show');
+        },
+
+        refreshOrderSection() {
+            View.populateCustomerSelect();
+            View.populateItemSelect();
+            this.updateBill();
+        },
+
+        //  EVENTS
+        bindEvents() {
+            //  Login
+            $('#loginForm').on('submit', e => {
+                e.preventDefault();
+                this.handleLogin();
+            });
+
+            $('#togglePass').on('click', () => {
+                const inp = $('#loginPass');
+                const icon = $('#togglePass i');
+                if (inp.attr('type') === 'password') {
+                    inp.attr('type', 'text');
+                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    inp.attr('type', 'password');
+                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            });
+
+            //  Logout
+            $('#logoutBtn').on('click', () => this.handleLogout());
+
+            //  Sidebar nav
+            $(document).on('click', '.nav-item', function() {
+                Controller.navigate($(this).data('section'));
+            });
+            $(document).on('click', '.dash-link', function() {
+                Controller.navigate($(this).data('section'));
+            });
+
+            //  Mobile sidebar
+            $('#menuToggle').on('click', () => {
+                $('#sidebar').addClass('open');
+                $('#sidebarOverlay').addClass('show');
+            });
+            $('#sidebarClose, #sidebarOverlay').on('click', () => {
+                $('#sidebar').removeClass('open');
+                $('#sidebarOverlay').removeClass('show');
+            });
+
+            //  Modal close
+            $(document).on('click', '[data-close]', function() {
+                View.closeModal($(this).data('close'));
+            });
+            $(document).on('click', '.modal-overlay', function(e) {
+                if (e.target === this) View.closeModal($(this).attr('id'));
+            });
+
+            //  customer
+            $('#openAddCustomer').on('click', () => this.openCustomerModal());
+            $('#customerForm').on('submit', e => { e.preventDefault(); this.saveCustomer(); });
+            $('#customerSearch').on('input', function() {
+                View.renderCustomers(Model.searchCustomers($(this).val()));
+            });
+
+            //  item
+            $('#openAddItem').on('click', () => this.openItemModal());
+            $('#itemForm').on('submit', e => { e.preventDefault(); this.saveItem(); });
+            $('#itemSearch').on('input', function() {
+                View.renderItems(Model.searchItems($(this).val()));
+            });
+
+            //  Table action delegation
+            $(document).on('click', '[data-action]', (e) => {
+                const el  = $(e.currentTarget);
+                const act = el.data('action');
+                const id  = el.data('id');
+                const idx = el.data('idx');
+
+                if (act === 'editCust')   this.openCustomerModal(parseInt(id));
+                if (act === 'delCust')    this.confirmDelete('customer', parseInt(id));
+                if (act === 'editItem')   this.openItemModal(parseInt(id));
+                if (act === 'delItem')    this.confirmDelete('item', parseInt(id));
+                if (act === 'viewOrder')  this.viewOrderDetail(id);
+                if (act === 'decQty')     this.changeCartQty(idx, -1);
+                if (act === 'incQty')     this.changeCartQty(idx, +1);
+                if (act === 'removeCart') this.removeFromCart(idx);
+            });
+
+            //  order
+            $('#orderCustomer').on('change', () => this.updateBill());
+            $('#addItemToCart').on('click', () => this.addToCart());
+            $('#placeOrderBtn').on('click', () => this.placeOrder());
+            $('#clearOrderBtn').on('click', () => this.clearOrder());
+
+            //  History search
+            $('#historySearch').on('input', function() {
+                View.renderHistory(Model.searchOrders($(this).val()));
+            });
+
+            //  Confirm delete
+            $('#confirmYes').on('click', () => {
+                if (this._deleteCb) { this._deleteCb(); this._deleteCb = null; }
+                View.closeModal('confirmModal');
+            });
+        },
+
+        //  AUTH
+        handleLogin() {
+            const user = $('#loginUser').val().trim();
+            const pass = $('#loginPass').val();
+            let ok = true;
+
+            $('#userErr').text('');
+            $('#passErr').text('');
+            $('#loginAlert').addClass('d-none');
+
+            if (!user) { $('#userErr').text('Username is required'); ok = false; }
+            if (!pass) { $('#passErr').text('Password is required'); ok = false; }
+            if (!ok) return;
+
+            if (user === Model.VALID_USER && pass === Model.VALID_PASS) {
+                Model.isLoggedIn = true;
+                $('#loginPage').removeClass('active');
+                $('#appPage').addClass('active').css('display','flex');
+                this.navigate('dashboard');
+                View.toast('Welcome back, Admin!', 'success');
+            } else {
+                $('#loginAlert').removeClass('d-none');
+            }
+        },
+
+        handleLogout() {
+            Model.isLoggedIn = false;
+            this.cart = [];
+            $('#appPage').removeClass('active').hide();
+            $('#loginPage').addClass('active');
+            $('#loginUser').val('');
+            $('#loginPass').val('');
+            $('#loginAlert').addClass('d-none');
+            View.toast('Logged out successfully', 'warn');
+        },
+
+        //  Customer crud
+        openCustomerModal(id = null) {
+            $('#customerForm')[0].reset();
+            $('#custId').val('');
+            $('#custNameErr,#custPhoneErr,#custAddressErr').text('');
+
+            if (id) {
+                const c = Model.findCustomer(id);
+                if (!c) return;
+                $('#customerModalTitle').text('Edit Customer');
+                $('#custId').val(c.id);
+                $('#custName').val(c.name);
+                $('#custPhone').val(c.phone);
+                $('#custAddress').val(c.address);
+            } else {
+                $('#customerModalTitle').text('Add Customer');
+            }
+            View.openModal('customerModal');
+        },
+
+        saveCustomer() {
+            const name    = $('#custName').val().trim();
+            const phone   = $('#custPhone').val().trim();
+            const address = $('#custAddress').val().trim();
+            let ok = true;
+
+            $('#custNameErr').text('');
+            $('#custPhoneErr').text('');
+            $('#custAddressErr').text('');
+
+            if (!name)    { $('#custNameErr').text('Name is required'); ok = false; }
+            if (!phone)   { $('#custPhoneErr').text('Phone is required'); ok = false; }
+            else if (!/^\+?[\d\s\-().]{7,}$/.test(phone)) { $('#custPhoneErr').text('Enter a valid phone number'); ok = false; }
+            if (!address) { $('#custAddressErr').text('Address is required'); ok = false; }
+            if (!ok) return;
+
+            const id = parseInt($('#custId').val());
+            if (id) {
+                Model.updateCustomer(id, { name, phone, address });
+                View.toast('Customer updated!', 'success');
+            } else {
+                Model.addCustomer({ name, phone, address });
+                View.toast('Customer added!', 'success');
+            }
+            View.closeModal('customerModal');
+            View.renderCustomers(Model.customers);
+            if (this.currentSection === 'dashboard') View.renderDashboard();
+        },
+
+        //  Item crud
+        openItemModal(id = null) {
+            $('#itemForm')[0].reset();
+            $('#itemIdField').val('');
+            $('#itemCodeErr,#itemNameErr,#itemPriceErr,#itemQtyErr').text('');
+
+            if (id) {
+                const item = Model.findItem(id);
+                if (!item) return;
+                $('#itemModalTitle').text('Edit Item');
+                $('#itemIdField').val(item.id);
+                $('#itemCode').val(item.code);
+                $('#itemName').val(item.name);
+                $('#itemPrice').val(item.price);
+                $('#itemQty').val(item.qty);
+            } else {
+                $('#itemModalTitle').text('Add Item');
+            }
+            View.openModal('itemModal');
+        },
+
+        saveItem() {
+            const code  = $('#itemCode').val().trim().toUpperCase();
+            const name  = $('#itemName').val().trim();
+            const price = parseFloat($('#itemPrice').val());
+            const qty   = parseInt($('#itemQty').val());
+            let ok = true;
+
+            $('#itemCodeErr,#itemNameErr,#itemPriceErr,#itemQtyErr').text('');
+
+            if (!code)           { $('#itemCodeErr').text('Item code is required'); ok = false; }
+            if (!name)           { $('#itemNameErr').text('Item name is required'); ok = false; }
+            if (isNaN(price) || price < 0) { $('#itemPriceErr').text('Enter a valid price'); ok = false; }
+            if (isNaN(qty)   || qty < 0)   { $('#itemQtyErr').text('Enter a valid quantity'); ok = false; }
+            if (!ok) return;
+
+            // Check duplicate code
+            const existId = parseInt($('#itemIdField').val());
+            const dup = Model.items.find(i => i.code === code && i.id !== existId);
+            if (dup) { $('#itemCodeErr').text('Item code already exists'); return; }
+
+            if (existId) {
+                Model.updateItem(existId, { code, name, price, qty });
+                View.toast('Item updated!', 'success');
+            } else {
+                Model.addItem({ code, name, price, qty });
+                View.toast('Item added!', 'success');
+            }
+            View.closeModal('itemModal');
+            View.renderItems(Model.items);
+            if (this.currentSection === 'dashboard') View.renderDashboard();
+        },
+
+        // Delete comform
+        confirmDelete(type, id) {
+            const msgs = { customer: 'Delete this customer? This action cannot be undone.', item: 'Delete this item from inventory?' };
+            $('#confirmMsg').text(msgs[type] || 'Delete this record?');
+            this._deleteCb = () => {
+                if (type === 'customer') {
+                    Model.deleteCustomer(id);
+                    View.renderCustomers(Model.customers);
+                    View.toast('Customer deleted', 'warn');
+                } else if (type === 'item') {
+                    Model.deleteItem(id);
+                    View.renderItems(Model.items);
+                    View.toast('Item deleted', 'warn');
+                }
+                if (this.currentSection === 'dashboard') View.renderDashboard();
+            };
+            View.openModal('confirmModal');
+        },
+
+        // Order management
+        addToCart() {
+            const itemId = parseInt($('#orderItemSelect').val());
+            const qty    = parseInt($('#orderQty').val());
+
+            $('#orderItemErr').text('');
+
+            if (!itemId) { $('#orderItemErr').text('Please select an item'); return; }
+            if (!qty || qty < 1) { $('#orderItemErr').text('Quantity must be at least 1'); return; }
+
+            const item = Model.findItem(itemId);
+            if (!item) return;
+
+            if (qty > item.qty) {
+                $('#orderItemErr').text(`Only ${item.qty} in stock`);
+                return;
+            }
+
+            // Already in cart?
+            const existing = this.cart.find(ci => ci.itemId === itemId);
+            if (existing) {
+                const newQty = existing.qty + qty;
+                if (newQty > item.qty) {
+                    $('#orderItemErr').text(`Max stock: ${item.qty} (${existing.qty} already in cart)`);
+                    return;
+                }
+                existing.qty = newQty;
+            } else {
+                this.cart.push({ itemId, name: item.name, price: item.price, qty });
+            }
+
+            $('#orderItemSelect').val('');
+            $('#orderQty').val('1');
+            View.renderCart(this.cart);
+            this.updateBill();
+        },
+
+        changeCartQty(idx, delta) {
+            const ci   = this.cart[idx];
+            const item = Model.findItem(ci.itemId);
+            const newQ = ci.qty + delta;
+            if (newQ < 1) { this.removeFromCart(idx); return; }
+            if (item && newQ > item.qty) { View.toast(`Max stock: ${item.qty}`, 'warn'); return; }
+            ci.qty = newQ;
+            View.renderCart(this.cart);
+            this.updateBill();
+        },
+
+        removeFromCart(idx) {
+            this.cart.splice(idx, 1);
+            View.renderCart(this.cart);
+            this.updateBill();
+        },
+
+        updateBill() {
+            const custId   = $('#orderCustomer').val();
+            const custName = custId ? Model.findCustomer(parseInt(custId))?.name || '—' : '—';
+            const subtotal = this.cart.reduce((s, ci) => s + ci.price * ci.qty, 0);
+            const tax      = subtotal * 0.08;
+            const total    = subtotal + tax;
+            const itemCount = this.cart.reduce((s, ci) => s + ci.qty, 0);
+
+            $('#billCustomer').text(custName);
+            $('#billItemCount').text(itemCount);
+            $('#billSubtotal').text(`RS ${subtotal.toFixed(2)}`);
+            $('#billTax').text(`RS ${tax.toFixed(2)}`);
+            $('#billTotal').text(`RS ${total.toFixed(2)}`);
+            $('#placeOrderBtn').prop('disabled', !this.cart.length || !custId);
+        },
+
+        placeOrder() {
+            const custId = parseInt($('#orderCustomer').val());
+
+            $('#orderCustomerErr').text('');
+            if (!custId) { $('#orderCustomerErr').text('Please select a customer'); return; }
+            if (!this.cart.length) { View.toast('Cart is empty!', 'warn'); return; }
+
+            const order = Model.placeOrder(custId, this.cart);
+            this.cart = [];
+            View.renderCart(this.cart);
+            View.populateItemSelect();   // refresh stock counts
+            this.updateBill();
+
+            // Show order ID
+            $('#orderIdDisplay').text(`Last Order: ${order.id}`);
+
+            View.toast(`Order ${order.id} placed — RS ${order.total.toFixed(2)}`, 'success');
+            View.renderDashboard();
+        },
+
+        clearOrder() {
+            this.cart = [];
+            $('#orderCustomer').val('');
+            $('#orderItemSelect').val('');
+            $('#orderQty').val('1');
+            $('#orderCustomerErr,#orderItemErr').text('');
+            View.renderCart(this.cart);
+            this.updateBill();
+        },
+
+        // Order  details
+        viewOrderDetail(orderId) {
+            const order = Model.orders.find(o => o.id === orderId);
+            if (!order) return;
+            View.renderOrderDetail(order);
+            View.openModal('orderDetailModal');
+        }
+    };
+
+    // Bootstrap
+    $(document).ready(() => {
+        Controller.init();
+    });
+</script>
+</body>
+</html>
 
 
